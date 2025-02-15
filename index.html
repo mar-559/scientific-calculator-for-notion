@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=350, initial-scale=1.0" />
+  <title>Calcolatrice Avanzata</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@500&family=MuseoModerno:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    /* Impostazioni di base */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f9f7f9;  /* colore aggiornato */
+      color: #333;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: auto;
+    }
+    
+    /* Contenitore della calcolatrice */
+    #calculator-container {
+      width: 350px;
+      border: 1px solid #ddd;
+      background: #f9f7f9;  /* colore aggiornato */
+      padding: 10px;
+      box-sizing: border-box;
+      border-radius: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Schermo della calcolatrice */
+    #screen {
+      display: block;
+      background-color: #edebf4;  /* colore aggiornato */
+      border: 3px solid transparent;
+      border-radius: 29px;
+      width: 90%;
+      height: 80px;
+      margin: 10px auto;
+      text-align: right;
+      font-size: 40px;
+      font-family: 'Dosis', sans-serif;
+      box-sizing: border-box;
+      overflow: hidden;
+      color: #333;
+    }
+    
+    /* Righe della calcolatrice */
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+    }
+    
+    /* Stile dei pulsanti */
+    .calc-row button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      width: 40px;
+      height: 40px;
+      margin: 0 3px;
+      border-radius: 10px;
+      background-color: #eacfdd;
+      border: 1px solid #ad919100;
+      font-family: 'MuseoModerno', cursive;
+      cursor: pointer;
+      color: #fff;
+      transition: background 0.3s, transform 0.1s;
+    }
+    
+    .calc-row button:hover {
+      transform: scale(0.95);
+    }
+    
+    /* Pulsanti speciali (classe dark) */
+    .dark {
+      background: #e8bec7 !important;
+      border: 1px solid #e8bec7;
+    }
+    
+    .dark:hover {
+      background: #e8bec7 !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="calculator-container">
+    <input type="text" id="screen" readonly>
+    <div class="calc-row">
+      <button class="button">Rad</button>
+      <button class="button">Deg</button>
+      <div style="flex-grow:1;"></div>
+      <button class="button" id="clean">AC</button>
+    </div>
+    <div class="calc-row">
+      <button class="button">sin</button>
+      <button class="button">cos</button>
+      <button class="button">tan</button>
+      <button class="button dark">7</button>
+      <button class="button dark">8</button>
+      <button class="button dark">9</button>
+      <button class="button">*</button>
+    </div>
+    <div class="calc-row">
+      <button class="button">x^</button>
+      <button class="button">pi</button>
+      <button class="button">%</button>
+      <button class="button dark">4</button>
+      <button class="button dark">5</button>
+      <button class="button dark">6</button>
+      <button class="button">/</button>
+    </div>
+    <div class="calc-row">
+      <button class="button">ln</button>
+      <button class="button">log</button>
+      <button class="button">x!</button>
+      <button class="button dark">1</button>
+      <button class="button dark">2</button>
+      <button class="button dark">3</button>
+      <button class="button">-</button>
+    </div>
+    <div class="calc-row">
+      <button class="button">&radic;<span class="over"></span></button>
+      <button class="button">(</button>
+      <button class="button">)</button>
+      <button class="button">.</button>
+      <button class="button dark">0</button>
+      <button class="button">=</button>
+      <button class="button">+</button>
+    </div>
+  </div>
+
+  <script>
+    // Variabile globale per la modalità angolare ("rad" o "deg")
+    let angleMode = "rad"; // default in radianti
+
+    // Funzioni per calcoli trigonometrici che considerano la modalità angolare
+    function mySin(x) {
+      return angleMode === "deg" ? Math.sin(x * Math.PI / 180) : Math.sin(x);
+    }
+    function myCos(x) {
+      return angleMode === "deg" ? Math.cos(x * Math.PI / 180) : Math.cos(x);
+    }
+    function myTan(x) {
+      return angleMode === "deg" ? Math.tan(x * Math.PI / 180) : Math.tan(x);
+    }
+    
+    // Funzione per logaritmo in base 10
+    function myLog(x) {
+      return Math.log10 ? Math.log10(x) : Math.log(x) / Math.LN10;
+    }
+    
+    // Funzione per il fattoriale
+    function factorial(n) {
+      if(n < 0) return NaN;
+      if(n === 0) return 1;
+      let result = 1;
+      for (let i = 1; i <= n; i++) {
+        result *= i;
+      }
+      return result;
+    }
+
+    // Seleziona display e pulsanti
+    var display = document.getElementById("screen");
+    var buttons = document.getElementsByClassName("button");
+
+    Array.prototype.forEach.call(buttons, function(button) {
+      button.addEventListener("click", function() {
+        var txt = button.textContent.trim();
+        // Gestione dei comandi non numerici/funzionali
+        if (txt === "AC") {
+          clearDisplay();
+        } else if (txt === "=") {
+          computeResult();
+        } else if (txt === "Rad") {
+          angleMode = "rad";
+          // Puoi anche aggiornare l'interfaccia per indicare la modalità attiva
+        } else if (txt === "Deg") {
+          angleMode = "deg";
+        }
+        // Funzioni trigonometriche e logaritmiche
+        else if (txt === "sin") {
+          display.value += "mySin(";
+        } else if (txt === "cos") {
+          display.value += "myCos(";
+        } else if (txt === "tan") {
+          display.value += "myTan(";
+        } else if (txt === "ln") {
+          display.value += "Math.log(";
+        } else if (txt === "log") {
+          display.value += "myLog(";
+        }
+        // Gestione del fattoriale
+        else if (txt === "x!") {
+          display.value += "!";
+        }
+        // Gestione di "pi"
+        else if (txt === "pi") {
+          display.value += Math.PI;
+        }
+        // Operatore di potenza
+        else if (txt === "x^") {
+          display.value += "^";
+        }
+        // Per tutti gli altri (numeri, operatori, parentesi, punto)
+        else {
+          display.value += txt;
+        }
+      });
+    });
+
+    // Funzione per elaborare l'espressione e calcolare il risultato
+    function computeResult() {
+      let expression = display.value;
+      // Gestione del fattoriale:
+      // Sostituisce pattern tipo "numero!" con "factorial(numero)"
+      expression = expression.replace(/(\d+)!/g, "factorial($1)");
+      // Gestione dell'operatore di potenza: converte "a^b" in "Math.pow(a,b)"
+      expression = expression.replace(/(\d+(\.\d+)?)\^(\d+(\.\d+)?)/g, "Math.pow($1,$3)");
+      try {
+        display.value = eval(expression);
+      } catch (e) {
+        display.value = "Syntax Error";
+      }
+    }
+    
+    function clearDisplay() {
+      display.value = "";
+    }
+  </script>
+</body>
+</html>
